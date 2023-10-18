@@ -1,0 +1,11 @@
+.is-login {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.nav-align {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
