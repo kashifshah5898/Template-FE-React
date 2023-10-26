@@ -1,6 +1,11 @@
-import { getApi, postApi } from "./axiosService"
+import { getApi, postApi } from "./axiosService";
 
-export const loginApi = (data) => {
-    return postApi('login', data)
-}
+const loginApi = (data) => {
+  return postApi("users/login", data);
+};
 
+const getUsers = () => {
+  return getApi("users/");
+};
+
+export { loginApi, getUsers };

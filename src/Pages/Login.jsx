@@ -5,7 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { loginApi } from "../Api/Service";
+import { getUsers, loginApi } from "../Api/Service";
+import { catchBlock, decodeData, decodeJWT } from "../utils/Constant";
+
+import jwt_decode from "jwt-decode";
 
 const Login = () => {
   const signIn = useSignIn();
@@ -31,32 +34,48 @@ const Login = () => {
   //   authUser()
 
   useEffect(() => {
+    fetchAllUsers();
     if (isAuthenticated()) {
       // user is not i think authenticated
       //   navigate("/");
     }
   }, []);
 
+  const fetchAllUsers = async () => {
+    try {
+      const users = await getUsers();
+      console.log({ users });
+    } catch (error) {
+      console.log({ error });
+      // toast.error(catchBlock(error));
+    }
+  };
+
   const onLogin = async (data) => {
     try {
       const loginRes = await loginApi(data);
+      if (loginRes.success) localStorage.setItem("userData", loginRes.encodedData);
 
       if (
         loginRes.success &&
         signIn({
-          token: loginRes.data.token.token,
-          expiresIn: 43200,
+          token: loginRes.data.tokens.accessToken,
+          expiresIn: jwt_decode(loginRes.data.tokens.accessToken).exp,
           tokenType: "Bearer",
-          authState: loginRes.data,
+          authState: loginRes.encodedData,
         })
       ) {
         toast.success(loginRes.msg);
       } else {
-        toast.error(loginRes?.msg || "Something went wrong");
+        toast.error(loginRes?.msg);
       }
     } catch (error) {
-      toast.error(error?.data?.msg || error?.message || "Something went wrong");
+      toast.error(catchBlock(error));
     }
+  };
+
+  const decode = () => {
+    fetchAllUsers();
   };
 
   return (
@@ -99,6 +118,9 @@ const Login = () => {
               <div className="mt-4">
                 <Button sx={{ m: 1, width: "30ch" }} type="submit" variant="contained">
                   Login
+                </Button>
+                <Button onClick={decode} sx={{ m: 1, width: "30ch" }} variant="contained">
+                  Decode
                 </Button>
               </div>
             </form>
